@@ -58,13 +58,13 @@
 // `
 //
 // setupCounter(document.querySelector('#counter'))
-//
-//
+
+
 
 async function getMessage() {
     const response =
         await fetch(
-            "http://127.0.0.1:8000/message"
+          "http://127.0.0.1:8000/todos/message"
         );
 
     const data =
