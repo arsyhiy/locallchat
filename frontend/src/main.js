@@ -59,21 +59,41 @@
 //
 // setupCounter(document.querySelector('#counter'))
 
-
-
 async function getMessage() {
-    const response =
-        await fetch(
-          "http://127.0.0.1:8000/todos/message"
-        );
+  const response = await fetch(
+    // "http://127.0.0.1:8000/todos/message"
+    "/api/todos/message",
+  );
 
-    const data =
-        await response.json();
+  const data = await response.json();
 
-    document.getElementById(
-        "message"
-    ).textContent =
-        data.message;
+  document.getElementById("message").textContent = data.message;
 }
 
 getMessage();
+
+const chat = document.getElementById("chat");
+
+// const ws=new WebSocket("ws://localhost:8000/ws");
+const ws = new WebSocket("ws://127.0.0.1:8080/ws");
+
+ws.onmessage = (event) => {
+  const div = document.createElement("div");
+
+  div.textContent = event.data;
+
+  chat.appendChild(div);
+
+  // автопрокрутка вниз
+  window.scrollTo(0, document.body.scrollHeight);
+};
+
+function send() {
+  const input = document.getElementById("msg");
+
+  if (!input.value.trim()) return;
+
+  ws.send(input.value);
+
+  input.value = "";
+}
