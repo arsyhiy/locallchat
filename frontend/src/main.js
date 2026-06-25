@@ -59,41 +59,121 @@
 //
 // setupCounter(document.querySelector('#counter'))
 
-async function getMessage() {
-  const response = await fetch(
-    // "http://127.0.0.1:8000/todos/message"
-    "/api/todos/message",
-  );
+import "./style.css";
 
-  const data = await response.json();
+/* -------------------------
+   API: загрузка сообщения
+-------------------------- */
+async function loadMessage() {
+  try {
+    const res = await fetch("/api/message");
 
-  document.getElementById("message").textContent = data.message;
+    if (!res.ok) {
+      console.error("HTTP error:", res.status);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data?.message) {
+      console.error("Empty response");
+      return;
+    }
+
+    console.log("API message:", data.message);
+  } catch (err) {
+    console.error("Error loading message:", err);
+  }
 }
 
-getMessage();
+loadMessage();
 
-const chat = document.getElementById("chat");
+/* -------------------------
+   DOM
+-------------------------- */
+const messages = document.getElementById("messages");
+const input = document.getElementById("msg");
+const sendButton = document.getElementById("send-btn");
 
-// const ws=new WebSocket("ws://localhost:8000/ws");
-const ws = new WebSocket("ws://127.0.0.1:8080/ws");
+/* -------------------------
+   WebSocket (stable version)
+-------------------------- */
+let ws;
+let isConnected = false;
+let reconnectTimer = null;
 
-ws.onmessage = (event) => {
-  const div = document.createElement("div");
+function connectWS() {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${protocol}//${window.location.host}/ws`;
 
-  div.textContent = event.data;
+  ws = new WebSocket(url);
 
-  chat.appendChild(div);
+  ws.addEventListener("open", () => {
+    console.log("✅ WebSocket connected");
+    isConnected = true;
 
-  // автопрокрутка вниз
-  window.scrollTo(0, document.body.scrollHeight);
-};
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+  });
 
-function send() {
-  const input = document.getElementById("msg");
+  ws.addEventListener("message", (event) => {
+    if (!messages) return;
 
-  if (!input.value.trim()) return;
+    const el = document.createElement("div");
+    el.textContent = event.data;
 
-  ws.send(input.value);
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  ws.addEventListener("close", () => {
+    console.log("❌ WebSocket closed");
+    isConnected = false;
+
+    // авто-reconnect
+    reconnectTimer = setTimeout(() => {
+      console.log("🔄 Reconnecting WebSocket...");
+      connectWS();
+    }, 1500);
+  });
+
+  ws.addEventListener("error", () => {
+    console.log("⚠️ WebSocket error");
+    ws.close();
+  });
+}
+
+connectWS();
+
+/* -------------------------
+   Send message
+-------------------------- */
+function sendMessage() {
+  if (!input || !messages) return;
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (!ws || !isConnected || ws.readyState !== WebSocket.OPEN) {
+    console.error("WebSocket is not connected");
+    return;
+  }
+
+  ws.send(text);
 
   input.value = "";
+  input.focus();
 }
+
+/* -------------------------
+   Events
+-------------------------- */
+sendButton?.addEventListener("click", sendMessage);
+
+input?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+});

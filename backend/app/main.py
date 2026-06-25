@@ -74,7 +74,12 @@ from sqlalchemy import select
 from db.db import SessionLocal
 from models.models import Message
 
+from routers.todo import router
+
 app = FastAPI()
+
+app.include_router(router)
+
 
 clients = []
 

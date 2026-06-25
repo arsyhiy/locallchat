@@ -1,7 +1,7 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 @router.get("/message")
 async def send_message():
-    return {"message": "Hello World"}
+    return
