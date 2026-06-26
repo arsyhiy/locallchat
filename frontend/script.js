@@ -1,5 +1,13 @@
 import "./style.css";
 
+const messages = document.getElementById("messages");
+const input = document.getElementById("msg");
+const sendButton = document.getElementById("send-btn");
+
+let ws;
+let isConnected = false;
+let reconnectTimer = null;
+
 async function loadMessage() {
   try {
     const res = await fetch("/api/message");
@@ -23,14 +31,6 @@ async function loadMessage() {
 }
 
 loadMessage();
-
-const messages = document.getElementById("messages");
-const input = document.getElementById("msg");
-const sendButton = document.getElementById("send-btn");
-
-let ws;
-let isConnected = false;
-let reconnectTimer = null;
 
 function connectWS() {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
