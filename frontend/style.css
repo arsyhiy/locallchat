@@ -6,7 +6,7 @@ body {
 
 #chat {
   height: 85vh;
-  border: 3px #ddd  solid;
+  border: 3px #ddd solid;
   overflow-y: auto;
   background: #ddd;
 }
@@ -17,7 +17,6 @@ body {
   padding: 15px;
   color: black;
   font-size: 20px;
-
 }
 
 #input {
@@ -39,4 +38,4 @@ body {
 button {
   padding: 8px 12px;
   cursor: pointer;
-  }
+}
